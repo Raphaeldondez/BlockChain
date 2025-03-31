@@ -135,8 +135,15 @@ def display_user_list( l_user ):
     while(l_cpy!= []):
         display_user(l_cpy.pop(0))
 
+def search_user_by_name(user_list, user_name: str):
+    i=0
+    while i < len(user_list):
+        if user_list[i].name == user_name:
+            return user_list[i]
+        i=i+1
+    print("Utilisateurintrouvable")
 
-#------Gestion des utilisateurs-----------------------#
+#------Gestion des transactions-----------------------#
 
 def create_transactions (id_transaction, receiver: user, sender: user, amount):
     new = transactions()
@@ -144,9 +151,17 @@ def create_transactions (id_transaction, receiver: user, sender: user, amount):
     new.receiver = receiver
     new.sender = sender
     new.amount = amount
-    message = b"HELLO"
-    new.nonce = sender.private_key.sign( message, padding.PSS( mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256() )  
+    message = "From:"+str(sender.name)+"To"+str(receiver.name)+"Of"+str(amount)
+    new.nonce = sender.private_key.sign( message.encode(), padding.PSS( mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256() )  
     return new
+
+
+def merge_transaction(transactions_to_save):
+    string = ""
+    while(transactions_to_save!=[]):
+        new_transaction = transactions_to_save.pop()
+        string = "\n"+ transactions_to_save +  str(new_transaction.id_transaction) + str(new_transaction.receiver)+ str(new_transaction.sender)+str(new_transaction.amount)+str(new_transaction.nonce)
+    return string
 
 def display_transaction ( transaction :transactions):
     print("Transaction id : ", transaction.id_transaction)
@@ -175,6 +190,11 @@ def make_transaction(id_transaction, receiver: user, sender: user, amount: int):
         print("Transaction refusée")
         return None
 
+def display_transaction_list(l_transactions):
+    l_cpy = l_transactions.copy()
+    while(l_cpy!=[]):
+        display_transaction(l_cpy.pop(0))
+
 
 
 #------Gestion de l'interface-----------------------#
@@ -186,6 +206,20 @@ def add_user(user_list):
     found = int(input())
     user_list.append(create_user(name, found))
     return user_list
+
+def add_transaction(transactions_to_save, user_list):
+    print("Nom de la transaction:")
+    name = input()
+    print("De la part de:")
+    choice = input()
+    sender = search_user_by_name(user_list ,choice)
+    print("Pour:")
+    choice= input()
+    receiver = search_user_by_name(user_list, choice)
+    print("Montant:")
+    amount = int(input())
+    transactions_to_save.append(make_transaction (name, receiver, sender, amount))
+    return transactions_to_save
 
 
 
@@ -212,10 +246,13 @@ def init():
 
 
 
+
+
 def bc_run(bc, user_list):
-    #Prise en compte de la demande utilisateur  
+    transactions_to_save = []
     flag = True #Condition de boucle sans fin
     while(flag):
+        #Prise en compte de la demande utilisateur 
         print("Que voulez vous faire ") # Quit, See_BlockChain, Mining, User, Transaction_Ajout
         choice = input()
         # Quitter le programme
@@ -235,26 +272,27 @@ def bc_run(bc, user_list):
                 display_user_list(user_list)
             else: 
                 print("Entrée invalide")
+        # Transaction ajout
+        elif choice == "t" :  
+            print("Ajouter une transaction: 'a'\n Afficher les transactions en attente de sauvegarde: 's'")
+            choice = input()
+            if choice == "a":
+                transactions_to_save= add_transaction(transactions_to_save, user_list)
+            elif choice == "s": 
+                display_transaction_list(transactions_to_save)
+            else: 
+                print("Entrée invalide")
         
 
 
 
-        
+
         else :
             print("Entrée invalide")
 
     
 '''
-        # Transaction ajout
-        elif choice == "T" :  
-            print("Ajouter une transaction: 'a'\n Afficher les :'s'")
-            choice = input()
-            if choice == "a":
-                
-            elif choice == "s": 
 
-            else: 
-                print("Entrée invalide")
          # Mining
         elif choice == "M" : 
             print("hey)")
@@ -268,22 +306,15 @@ def bc_run(bc, user_list):
 print("Beginning\n\n")
 init()
 '''
-init()
 bc = create_blockchain("Victory", 4)
 mining(bc, "Bonjour")
 mining(bc, "Bonjour")
 mining(bc, "Bonjour")
-print_blockchain(bc)
 
-
-j1 = create_user("Maya", 60)
-j2 = create_user("Léon", 70)
 
 
 trans_1 = make_transaction("trans_1", j1, j2, 50)
 display_transaction(trans_1)
 
-display_user(j1)
-display_user(j2)
 '''
 print("\n\nEnding")
