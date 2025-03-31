@@ -1,12 +1,11 @@
 #coding utf-8
 
+
+#Importation des librairies
 import hashlib
 import cryptography
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes, serialization
-
-
-#import Web3, EthereumTesterProvider
 
 #Définition des structures
 class block :
@@ -48,7 +47,8 @@ class transactions :
     nonce :str
 
 
-#Génération des blocs
+#------Gestion des blocs-----------------------#
+
 def create_blockchain(name: str, difficulty: int ):
     bc = blockchain()
     bc.name = name
@@ -111,7 +111,8 @@ def print_blockchain(bc: blockchain):
 
 
 
-#Gestion des utilisateur :
+#------Gestion des utilisateurs-----------------------#
+
 def create_user (name, wallet):
     new = user()
     new.name = name
@@ -121,7 +122,6 @@ def create_user (name, wallet):
     new.public_key = privkey.public_key()
     return new
 
-
 def display_user(user : user):
     print("User: ", user.name)
     print("Wallet: ", user.wallet)
@@ -129,7 +129,13 @@ def display_user(user : user):
     print("Private key: ", user.private_key.private_bytes( encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption() ))
     print("\n\n")
 
-#Gestion des transactions :
+def display_user_list( l_user ):
+    l_cpy = l_user.copy()
+    while(l_cpy!= []):
+        display_user(l_cpy.pop(0))
+
+
+#------Gestion des utilisateurs-----------------------#
 
 def create_transactions (id_transaction, receiver: user, sender: user, amount):
     new = transactions()
@@ -170,17 +176,45 @@ def make_transaction(id_transaction, receiver: user, sender: user, amount: int):
 
 
 
+#------Gestion de l'interface-----------------------#
+
+def init():
+    #Création de la BlockChain
+    print("Choisis un nom de BlockChain")
+    name = input()
+    print("Choisis une difficulté de BlockChain")
+    difficulty = int(input())
+    bc = create_blockchain(name, difficulty)
+
+    #Création des utilisateurs
+    user_list = []
+    print("\nChoisis un nombre d'utilisateur")
+    nb_user = int(input())
+    while nb_user> 0: 
+        print("\nChoisis le nom de l'utilisateur", nb_user)
+        name = input()
+        print("Choisis le montant possédé par l'utilisateur", nb_user)
+        found = int(input())
+        user_list.append(create_user(name, found))
+        nb_user = nb_user-1
+    display_user_list(user_list)
+
+
+
+    
 
 
 #Main
 print("Beginning\n\n")
+init()
 '''
+init()
 bc = create_blockchain("Victory", 4)
 mining(bc, "Bonjour")
 mining(bc, "Bonjour")
 mining(bc, "Bonjour")
 print_blockchain(bc)
-'''
+
 
 j1 = create_user("Maya", 60)
 j2 = create_user("Léon", 70)
@@ -191,5 +225,5 @@ display_transaction(trans_1)
 
 display_user(j1)
 display_user(j2)
-
+'''
 print("\n\nEnding")
