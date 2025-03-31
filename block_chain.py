@@ -3,7 +3,7 @@
 import hashlib
 import cryptography
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 
 
 #import Web3, EthereumTesterProvider
@@ -42,9 +42,9 @@ class user :
 
 class transactions :
     id_transaction : str
-    id_sender : str
-    id_receiver : str
-    amount : str
+    sender : str
+    receiver : str
+    amount : int
     nonce :str
 
 
@@ -124,34 +124,49 @@ def create_user (name, wallet):
 
 def display_user(user : user):
     print("User: ", user.name)
-    print("User: ", user.name)
-    print("Public key: ", user.public_key)
-    print("Private key: ", user.private_key)
-
+    print("Wallet: ", user.wallet)
+    print("Public key: ", user.public_key.public_bytes(encoding=serialization.Encoding.PEM,format=serialization.PublicFormat.SubjectPublicKeyInfo))
+    print("Private key: ", user.private_key.private_bytes( encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption() ))
+    print("\n\n")
 
 #Gestion des transactions :
 
 def create_transactions (id_transaction, receiver: user, sender: user, amount):
     new = transactions()
     new.id_transaction = id_transaction
-    new.id_receiver = receiver
-    new.id_sender = sender
+    new.receiver = receiver
+    new.sender = sender
     new.amount = amount
     message = b"HELLO"
-    new.nonce = sender.private_key.sign( message, padding.PSS( mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256() )
-   
+    new.nonce = sender.private_key.sign( message, padding.PSS( mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256() )  
     return new
 
 def display_transaction ( transaction :transactions):
     print("Transaction id : ", transaction.id_transaction)
-    print("From :", transaction.id_sender)
-    print("To: ", transaction.id_receiver)
-    print("Amount: ", transaction.amount)
-    print("Signature: ", transaction.nonce)
+    print("From :")
+    display_user(transaction.sender)
+    print("To: ")
+    display_user(transaction.receiver)
+    print("\nAmount: ", transaction.amount)
+    print("Signature: ", transaction.nonce, "\n\n")
+
+def check_transaction_conditions(sender: user, sum : int):
+    flag = True
+    if sender.wallet < sum :
+         flag = False
+    return flag
 
 
+def make_transaction(id_transaction, receiver: user, sender: user, amount: int):
+    if check_transaction_conditions(sender , amount ):
+        sender.wallet = (sender.wallet) - amount
+        receiver.wallet = (receiver.wallet) + amount 
+        print("Transaction Done")
 
-
+        return create_transactions(id_transaction, receiver, sender, amount)
+    else :
+        print("Transaction refusée")
+        return None
 
 
 
@@ -168,11 +183,13 @@ print_blockchain(bc)
 '''
 
 j1 = create_user("Maya", 60)
-j2 = create_user("Léon", 10)
-#display_user(j1)
-#display_user(j2)
+j2 = create_user("Léon", 70)
 
-trans_1 = create_transactions("trans_1", j1, j2, 50)
+
+trans_1 = make_transaction("trans_1", j1, j2, 50)
 display_transaction(trans_1)
+
+display_user(j1)
+display_user(j2)
 
 print("\n\nEnding")
