@@ -100,6 +100,7 @@ def display_bloc (bloc : block):
     print("Proof of work : ",bloc.proof_of_work,"\n")
 
 def print_blockchain(bc: blockchain):
+    print("Affichage de la BlockChain")
     print(f"\n{bc.name}")
     print("Difficulty : ", bc.difficulty)
     print(f"Taille de la blockchain : {bc.n}\n")
@@ -178,6 +179,16 @@ def make_transaction(id_transaction, receiver: user, sender: user, amount: int):
 
 #------Gestion de l'interface-----------------------#
 
+def add_user(user_list):
+    print("Choisis le nom de l'utilisateur")
+    name = input()
+    print("Choisis le montant possédé par l'utilisateur")
+    found = int(input())
+    user_list.append(create_user(name, found))
+    return user_list
+
+
+
 def init():
     #Création de la BlockChain
     print("Choisis un nom de BlockChain")
@@ -190,18 +201,67 @@ def init():
     user_list = []
     print("\nChoisis un nombre d'utilisateur")
     nb_user = int(input())
-    while nb_user> 0: 
-        print("\nChoisis le nom de l'utilisateur", nb_user)
-        name = input()
-        print("Choisis le montant possédé par l'utilisateur", nb_user)
-        found = int(input())
-        user_list.append(create_user(name, found))
+    while nb_user> 0:
+        print("\nUtilisateur: ", nb_user) 
+        user_list = add_user(user_list)
         nb_user = nb_user-1
-    display_user_list(user_list)
+    display_user_list(user_list) #Affichage des utilisateurs 
+
+    print("\nLa Block Chain a été initialisée avec succés")
+    bc_run(bc, user_list)
 
 
+
+def bc_run(bc, user_list):
+    #Prise en compte de la demande utilisateur  
+    flag = True #Condition de boucle sans fin
+    while(flag):
+        print("Que voulez vous faire ") # Quit, See_BlockChain, Mining, User, Transaction_Ajout
+        choice = input()
+        # Quitter le programme
+        if choice == "q" : 
+            flag = False
+            print("\n\nMerci d'avoir utilisé nos services")
+        # See_BlockChain
+        elif choice == "s" : 
+            print_blockchain(bc)
+        # User operation
+        elif choice == "u" :  
+            print("Ajouter un utilisateur: 'a'\nAfficher utilisateurs:'s'")
+            choice = input()
+            if choice == "a":
+                user_list = add_user(user_list)
+            elif choice == "s": 
+                display_user_list(user_list)
+            else: 
+                print("Entrée invalide")
+        
+
+
+
+        
+        else :
+            print("Entrée invalide")
 
     
+'''
+        # Transaction ajout
+        elif choice == "T" :  
+            print("Ajouter une transaction: 'a'\n Afficher les :'s'")
+            choice = input()
+            if choice == "a":
+                
+            elif choice == "s": 
+
+            else: 
+                print("Entrée invalide")
+         # Mining
+        elif choice == "M" : 
+            print("hey)")
+'''
+
+
+
 
 
 #Main
