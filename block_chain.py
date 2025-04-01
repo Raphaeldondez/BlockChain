@@ -159,8 +159,8 @@ def create_transactions (id_transaction, receiver: user, sender: user, amount):
 def merge_transaction(transactions_to_save):
     string = ""
     while(transactions_to_save!=[]):
-        new_transaction = transactions_to_save.pop()
-        string = "\n"+ transactions_to_save +  str(new_transaction.id_transaction) + str(new_transaction.receiver)+ str(new_transaction.sender)+str(new_transaction.amount)+str(new_transaction.nonce)
+        new_transaction = transactions_to_save.pop(0)
+        string = "\n"+ string +  str(new_transaction.id_transaction) + str(new_transaction.receiver)+ str(new_transaction.sender)+str(new_transaction.amount)+str(new_transaction.nonce)
     return string
 
 def display_transaction ( transaction :transactions):
@@ -253,7 +253,7 @@ def bc_run(bc, user_list):
     flag = True #Condition de boucle sans fin
     while(flag):
         #Prise en compte de la demande utilisateur 
-        print("Que voulez vous faire ") # Quit, See_BlockChain, Mining, User, Transaction_Ajout
+        print("Que voulez vous faire ?") # Quit, See_BlockChain, Mining, User, Transaction_Ajout
         choice = input()
         # Quitter le programme
         if choice == "q" : 
@@ -283,20 +283,15 @@ def bc_run(bc, user_list):
             else: 
                 print("Entrée invalide")
         
-
+         # Mining
+        elif choice == "m" : 
+            print("Recherche du block, les transactions en attente de sauvegarde seonrt placées dans ce bloc")
+            mining(bc, merge_transaction(transactions_to_save))
 
 
 
         else :
             print("Entrée invalide")
-
-    
-'''
-
-         # Mining
-        elif choice == "M" : 
-            print("hey)")
-'''
 
 
 
@@ -304,17 +299,7 @@ def bc_run(bc, user_list):
 
 #Main
 print("Beginning\n\n")
+
 init()
-'''
-bc = create_blockchain("Victory", 4)
-mining(bc, "Bonjour")
-mining(bc, "Bonjour")
-mining(bc, "Bonjour")
 
-
-
-trans_1 = make_transaction("trans_1", j1, j2, 50)
-display_transaction(trans_1)
-
-'''
 print("\n\nEnding")
