@@ -41,14 +41,14 @@ class user :
 
 class transactions :
     id_transaction : str
-    sender : str
-    receiver : str
+    sender : user
+    receiver : user
     amount : int
     nonce :str
 
 
 #------Gestion des blocs-----------------------#
-
+#création d'un bloc
 def create_blockchain(name: str, difficulty: int ):
     bc = blockchain()
     bc.name = name
@@ -58,7 +58,7 @@ def create_blockchain(name: str, difficulty: int ):
     return bc
 
 # Minage
-def is_correct(hash: str, difficulty):
+def is_correct(hash: str, difficulty: int):
     flag = True
     i = 0
     while i< difficulty :
@@ -67,7 +67,7 @@ def is_correct(hash: str, difficulty):
         i = i+1
     return flag
 
-def generate_bloc (index, previous_hash, data, difficulty: int ):
+def generate_bloc (index: int, previous_hash, data: str, difficulty: int ):
     new = block()
     new.index = index
     new.previous_hash = previous_hash
@@ -83,7 +83,7 @@ def generate_bloc (index, previous_hash, data, difficulty: int ):
     new.proof_of_work = proof_of_work
     return new
 
-def mining (bc: blockchain, data):
+def mining (bc: blockchain, data: str):
     if bc.n >0 :
         last = (bc.chain)[ (bc.n) -1]
         new = generate_bloc(bc.n +1, last.proof_of_work, data, bc.difficulty)
@@ -114,7 +114,8 @@ def print_blockchain(bc: blockchain):
 
 #------Gestion des utilisateurs-----------------------#
 
-def create_user (name, wallet):
+# Création
+def create_user (name: str, wallet: int):
     new = user()
     new.name = name
     new.wallet = wallet
@@ -123,6 +124,7 @@ def create_user (name, wallet):
     new.public_key = privkey.public_key()
     return new
 
+# Affichage
 def display_user(user : user):
     print("User: ", user.name)
     print("Wallet: ", user.wallet)
@@ -135,6 +137,7 @@ def display_user_list( l_user ):
     while(l_cpy!= []):
         display_user(l_cpy.pop(0))
 
+#Recherche d'un utilisateur dans uneliste à partir d'un nom
 def search_user_by_name(user_list, user_name: str):
     i=0
     while i < len(user_list):
@@ -145,7 +148,7 @@ def search_user_by_name(user_list, user_name: str):
 
 #------Gestion des transactions-----------------------#
 
-def create_transactions (id_transaction, receiver: user, sender: user, amount):
+def create_transactions (id_transaction: str, receiver: user, sender: user, amount: int):
     new = transactions()
     new.id_transaction = id_transaction
     new.receiver = receiver
@@ -155,14 +158,16 @@ def create_transactions (id_transaction, receiver: user, sender: user, amount):
     new.nonce = sender.private_key.sign( message.encode(), padding.PSS( mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256() )  
     return new
 
-
-def merge_transaction(transactions_to_save):
-    string = ""
-    while(transactions_to_save!=[]):
-        new_transaction = transactions_to_save.pop(0)
-        string = "\n"+ string +  str(new_transaction.id_transaction) + str(new_transaction.receiver)+ str(new_transaction.sender)+str(new_transaction.amount)+str(new_transaction.nonce)
-    return string
-
+def make_transaction(id_transaction: str, receiver: user, sender: user, amount: int):
+    if check_transaction_conditions(sender , amount ):
+        sender.wallet = (sender.wallet) - amount
+        receiver.wallet = (receiver.wallet) + amount 
+        print("Transaction Done")
+        return create_transactions(id_transaction, receiver, sender, amount)
+    else :
+        print("Transaction refusée")
+        return None
+    
 def display_transaction ( transaction :transactions):
     print("Transaction id : ", transaction.id_transaction)
     print("From :")
@@ -172,30 +177,23 @@ def display_transaction ( transaction :transactions):
     print("\nAmount: ", transaction.amount)
     print("Signature: ", transaction.nonce, "\n\n")
 
+def display_transaction_list(l_transactions):
+    l_cpy = l_transactions.copy()
+    while(l_cpy!=[]):
+        display_transaction(l_cpy.pop(0))
+
 def check_transaction_conditions(sender: user, sum : int):
     flag = True
     if sender.wallet < sum :
          flag = False
     return flag
 
-
-def make_transaction(id_transaction, receiver: user, sender: user, amount: int):
-    if check_transaction_conditions(sender , amount ):
-        sender.wallet = (sender.wallet) - amount
-        receiver.wallet = (receiver.wallet) + amount 
-        print("Transaction Done")
-
-        return create_transactions(id_transaction, receiver, sender, amount)
-    else :
-        print("Transaction refusée")
-        return None
-
-def display_transaction_list(l_transactions):
-    l_cpy = l_transactions.copy()
-    while(l_cpy!=[]):
-        display_transaction(l_cpy.pop(0))
-
-
+def merge_transaction(transactions_to_save):
+    string = ""
+    while(transactions_to_save!=[]):
+        new_transaction = transactions_to_save.pop(0)
+        string = string + "\n" +  str(new_transaction.id_transaction) + str(new_transaction.receiver)+ str(new_transaction.sender)+str(new_transaction.amount)+str(new_transaction.nonce)
+    return string
 
 #------Gestion de l'interface-----------------------#
 
@@ -222,10 +220,10 @@ def add_transaction(transactions_to_save, user_list):
     return transactions_to_save
 
 
-
+#Initialisation de la BlockChain selon les demandes de l'utilisateur
 def init():
     #Création de la BlockChain
-    print("Choisis un nom de BlockChain")
+    print("Menu principal:\nChoisis un nom de BlockChain")
     name = input()
     print("Choisis une difficulté de BlockChain")
     difficulty = int(input())
@@ -247,7 +245,7 @@ def init():
 
 
 
-
+#Boucle infifnie permettant à l'utilisateur d'opérer sur la BlockChain
 def bc_run(bc, user_list):
     transactions_to_save = []
     flag = True #Condition de boucle sans fin
@@ -287,13 +285,9 @@ def bc_run(bc, user_list):
         elif choice == "m" : 
             print("Recherche du block, les transactions en attente de sauvegarde seonrt placées dans ce bloc")
             mining(bc, merge_transaction(transactions_to_save))
-
-
-
+        
         else :
             print("Entrée invalide")
-
-
 
 
 
